@@ -53,33 +53,26 @@ const Dashboard: React.FC = () => {
   async function handleUpdateFood(
     food: Omit<IFoodPlate, 'id' | 'available'>,
   ): Promise<void> {
-    let updatedFoods: IFoodPlate[] = [] as IFoodPlate[];
-    await api
-      .post(`/foods/${editingFood.id}`, {
-        food,
-        available: editingFood.available,
-      })
-      .then(response => {
-        updatedFoods = foods.map((foodToSave: IFoodPlate):
-          | IFoodPlate
-          | undefined => {
-          if (foodToSave.id === editingFood.id) {
-            return {
-              id: editingFood.id,
-              name: JSON.stringify(response.data.name),
-              image: JSON.stringify(response.data.image),
-              price: JSON.stringify(response.data.price),
-              description: JSON.stringify(response.data.description),
-              available: editingFood.available,
-            };
-          }
-          return undefined;
-        });
+    const response = await api.put(`/foods/${editingFood.id}`, {
+      ...food,
+      available: editingFood.available,
+    });
 
-        if (updatedFoods !== undefined) {
-          setFoods(updatedFoods);
+    setFoods(
+      foods.map(foodToSave => {
+        if (foodToSave.id === editingFood.id) {
+          return {
+            id: editingFood.id,
+            name: response.data.name,
+            image: response.data.image,
+            price: response.data.price,
+            description: response.data.description,
+            available: editingFood.available,
+          };
         }
-      });
+        return foodToSave;
+      }),
+    );
   }
 
   async function handleDeleteFood(id: number): Promise<void> {
